@@ -83,7 +83,7 @@ const userModule ={
             res.cookie('refreshtoken', refresh_token, {
                 httpOnly: true,
                 path: '/user/refresh_token',
-                maxAge: 7*24*60*60*1000 // 7 days
+                // maxAge: 7*24*60*60*1000 // 7 days
             })
             // console.log(refresh_token)
             const rf_token = refresh_token
@@ -203,7 +203,7 @@ const createAccessToken = (payload) => {
 }
 
 const createRefreshToken = (payload) => {
-    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {expiresIn: '7d'})
+    return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET)
 }
 
 module.exports = userModule
