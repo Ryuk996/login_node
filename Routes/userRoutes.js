@@ -18,4 +18,10 @@ router.post('/resetpwd',auth, userModule.resetPassword)
 
 router.get('/logout', userModule.logout)
 
+router.get('/getuser',auth,userModule.getUsers)
+
+router.get('/getuserInfo',auth,userModule.getUserInfo)
+
+router.put('/updateuser',auth,userModule.updateUser)
+
 module.exports= router

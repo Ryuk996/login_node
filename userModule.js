@@ -2,7 +2,7 @@ const Users = require('./userModel');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 
-const {CLIENT_URL}= process.env
+const {CLIENT_URL}= process.env 
 const sendMail = require('./sendMail')
 
 const userModule ={
@@ -25,8 +25,7 @@ const userModule ={
                 let salt = bcryptjs.genSaltSync(10);
                 let hash = bcryptjs.hashSync(req.body.password, salt);
                 req.body.password=hash;
-                // console.log(salt)
-                // console.log(hash)   
+          
 
                 const newUser = {
                     firstName, lastName,userName, password: hash
@@ -37,11 +36,7 @@ const userModule ={
                 sendMail(userName, url,"verify your emailID")
 
                 res.json({msg: "Register Success! Please activate your email to start."})
-            //     console.log(activation_token)
-
-            //     console.log(newUser)
-            // console.log(req.body)
-            // res.json({msg:"register test"})
+            
         } catch (error) {
             res.status(500).json({msg:"internal server error"})
         }
@@ -85,60 +80,29 @@ const userModule ={
                 path: '/user/refresh_token',
                 // maxAge: 7*24*60*60*1000 // 7 days
             })
-            // console.log(refresh_token)
+            
             const rf_token = refresh_token
-            //  console.log({rf_token})
+            
              if(!rf_token) return res.status(400).json({msg: "Please login now!"})
-            // console.log(rf_token)
+            
             jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
                 if(err) return res.status(400).json({msg: "Please login now!"})
-                // console.log(user)
+                
                 const access_token = createAccessToken({id: user.id})
-                // console.log({access_token})
+                
+                res.json({aToken: access_token})
              })
-            // if(matchPassword){
-            //     //Generate JWT token
-            //     const refresh_token = createRefreshToken({id: user._id})
-            //     res.cookie('refreshtoken', refresh_token, {
-            //     httpOnly: true,
-            //     path: '/user/refresh_token',
-            //     maxAge: 7*24*60*60*1000 // 7 days
-            // })
-
-            // res.json({msg: "Login success!"})
-            // }else{
-            //     res.status(404).json({
-            //         message : "Username/Password doesn't match"
-            //     })
-            // }
-            res.json({msg: "Login success!"})
+            
         } catch (err) {
             return res.status(500).json({msg: err.message})
         }
     },
     getAccessToken: async(req, res) => {
         try {
-            // const {userName, password} = req.body
-            // const user = await Users.findOne({userName})
-            // const refresh_token = createRefreshToken({id: user._id})
-            // res.cookie('refreshtoken', refresh_token, {
-            //     httpOnly: true,
-            //     path: '/user/refresh_token',
-            //     maxAge: 7*24*60*60*1000 // 7 days
-            // })
             console.log(refresh_token)
             const rf_token= req.refresh_token
             console.log(rf_token)
-            // const rf_token = req.cookies.refreshtoken
             console.log({rf_token})
-            // if(!rf_token) return res.status(400).json({msg: "Please login now!"})
-            // // console.log(rf_token)
-            // jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-            //     if(err) return res.status(400).json({msg: "Please login now!"})
-            //     // console.log(user)
-            //     const access_token = createAccessToken({id: user.id})
-            //     res.json({access_token})
-             //})
         } catch (err) {
             return res.status(500).json({msg: err.message})
         }
@@ -168,8 +132,8 @@ const userModule ={
             let salt = bcryptjs.genSaltSync(10);
                 let hash = bcryptjs.hashSync(req.body.password, salt);
                 req.body.password=hash;
-            // console.log(req.user)
-            await Users.findOneAndUpdate({_id: req.user.id}, {
+            // console.log(req.user)TODO
+                await Users.findOneAndUpdate({_id: req.userid.id}, {
                 password: hash
             })
 
@@ -182,6 +146,33 @@ const userModule ={
         try {
             res.clearCookie('refreshtoken', {path: '/user/refresh_token'})
             return res.json({msg: "Logged out."})
+        } catch (err) {
+            return res.status(500).json({msg: err.message})
+        }
+    },
+    getUsers: async (req, res) => {
+        try {
+            const data = await Users.findById(req.userid.id).select('-password')                  //todo=> user
+            console.log(data);
+            res.json([data]);
+        } catch (err) {
+            return res.status(500).json({msg: err.message})
+        }
+    },
+    getUserInfo: async (req, res) => {
+        try {
+            const data = await Users.findById(req.userid.id)
+            console.log(data);
+            res.json(data);
+        } catch (err) {
+            return res.status(500).json({msg: err.message})  
+        }
+    },
+    updateUser: async (req,res) => {
+        try {
+            const {firstName,profilePic} = req.body;
+            const data = await Users.findOneAndUpdate({_id:req.userid.id},{firstName,profilePic})
+            res.json({msg: "Update Success"})
         } catch (err) {
             return res.status(500).json({msg: err.message})
         }
